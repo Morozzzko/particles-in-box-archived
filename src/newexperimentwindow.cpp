@@ -112,7 +112,9 @@ void NewExperimentWindow::on_buttonRun_released() {
 
             QProgressDialog* progressDialog = new QProgressDialog(tr("Simulating into %1").arg(outputFile.fileName()),
                                                                   tr("Cancel"),
-                                                                  0, fps * minToSimulate, this);
+                                                                  0, fps * minToSimulate);
+
+            mInputFileName = outputFile.fileName();
             progressDialog->show();
 
             World* generator = new World(nLeftParticles, nRightParticles, rParticle,
@@ -123,10 +125,12 @@ void NewExperimentWindow::on_buttonRun_released() {
             QThread *worker = new QThread(this);
             generator->moveToThread(worker);
             connect(generator, &World::onSimulationProgress, progressDialog, &QProgressDialog::setValue);
-            connect(generator, &World::onSimulationFinished, progressDialog, &QProgressDialog::cancel);
+            connect(generator, &World::onSimulationFinished, progressDialog, &QProgressDialog::reset);
+            connect(generator, &World::onSimulationFinished, worker, &QThread::quit);
             connect(worker, &QThread::started, generator, &World::startSimulation);
             connect(worker, &QThread::finished, generator, &World::deleteLater);
             connect(worker, &QThread::finished, worker, &QThread::deleteLater);
+            connect(worker, &QThread::finished, this, &NewExperimentWindow::onSimulationComplete);
             connect(progressDialog, &QProgressDialog::canceled, worker, &QThread::terminate);
 
             this->hide();
@@ -144,6 +148,12 @@ void NewExperimentWindow::on_buttonRun_released() {
         this->close();
     }
 
+}
+
+void NewExperimentWindow::onSimulationComplete() {
+    DemonstrationWindow* win = new DemonstrationWindow(mInputFileName);
+    win->show();
+    this->close();
 }
 
 void NewExperimentWindow::on_buttonOutputFile_released() {
