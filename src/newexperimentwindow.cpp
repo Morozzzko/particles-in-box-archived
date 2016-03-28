@@ -121,7 +121,7 @@ void NewExperimentWindow::on_buttonRun_released() {
                                          vInit, vLoss, boxWidth, boxHeight, barrierX,
                                          barrierWidth, holeY, holeHeight, deltaVTop,
                                          deltaVBottom, deltaVSide, g, minToSimulate,
-                                         fps, outputFile.fileName().toStdString());
+                                         fps, outputFile.fileName());
             QThread *worker = new QThread(this);
             generator->moveToThread(worker);
             connect(generator, &World::onSimulationProgress, progressDialog, &QProgressDialog::setValue);

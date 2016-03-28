@@ -16,7 +16,7 @@ const double PI = 3.1415926;
 World::World(int nLeftParticles, int nRightParticles, double rParticle, double vInit, double loss, double width,
                      double height, double barrierX, double barrierWidth, double holeY,
                      double holeHeight, double deltaVTop, double deltaVBottom, double deltaVSide, double g,
-                     int minToSimulate, double frames, string fileName, QObject* parent) : QObject(parent){
+                     int minToSimulate, double frames, QString fileName, QObject* parent) : QObject(parent){
     this->g = g;
     this->loss = loss;
     geometry.rParticle = rParticle;
@@ -55,7 +55,7 @@ World::World(int nLeftParticles, int nRightParticles, double rParticle, double v
 }
 
 World::World(QString fileName, QObject *parent) : QObject(parent) {
-    this->fileName = fileName.toStdString();
+    this->fileName = fileName;
     ifstream in(fileName.toStdString(), ios::binary | ios::in);
     //box
     in.read((char*)&geometry.xRight, sizeof(geometry.xRight));
@@ -301,7 +301,7 @@ bool World::initialDistribution() {
 }
 
 void World::writeParameters() {
-    ofstream out(fileName, ios::binary | ios::out);
+    ofstream out(fileName.toStdString(), ios::binary | ios::out);
     if (out.is_open()) {
         //box
         out.write((char*)&geometry.xRight, sizeof(geometry.xRight));
@@ -335,7 +335,7 @@ void World::writeParameters() {
 void World::readParticlesState(int stateNum) {
     SParticle currParticle;
     uint16_t id;
-    ifstream in(fileName, ios::binary | ios::in | ios::app);
+    ifstream in(fileName.toStdString(), ios::binary | ios::in | ios::app);
 
     qint16 headSize = sizeof(geometry.xRight) + sizeof(geometry.yMax) + sizeof(deltaVTop) +
             sizeof(deltaVBottom) + sizeof(deltaVSide) +  sizeof(geometry.xCenter) +
@@ -366,7 +366,7 @@ void World::readParticlesState(int stateNum) {
  * Записывает накопленную статистику в файл
  */
 void World::writeStat() {
-    ofstream out(fileName, ios::binary | ios::out | ios::app);
+    ofstream out(fileName.toStdString(), ios::binary | ios::out | ios::app);
     if (out.is_open()) {
         out.write((char *) &time, sizeof(time));
         for (int i = 0; i < getParticleCount(); i++) {
@@ -561,7 +561,7 @@ void World::startSimulation() {
 }
 
 unsigned short int World::getStateCount() const {
-    QFileInfo fi(QString::fromStdString(fileName));
+    QFileInfo fi(fileName);
     qint64 fileSize = fi.size();
     qint16 headSize = sizeof(geometry.xRight) + sizeof(geometry.yMax) + sizeof(deltaVTop) +
             sizeof(deltaVBottom) + sizeof(deltaVSide) +  sizeof(geometry.xCenter) +
