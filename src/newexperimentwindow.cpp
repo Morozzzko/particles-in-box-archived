@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QProgressDialog>
 #include <QThread>
+#include <fstream>
 
 NewExperimentWindow::NewExperimentWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -33,6 +34,29 @@ void NewExperimentWindow::setInputFile(const QString& newFile) {
     if ((!newFile.isNull()) && !(newFile.isEmpty())) {
         QFileInfo fi(newFile);
         mInputFileName = newFile;
+
+        UiParams params;
+        std::ifstream in(mInputFileName.toStdString(), std::ios::binary | std::ios::in);
+        in.read((char *)&params, sizeof(UiParams));
+
+        ui->boxWidth->setValue(params.boxWidth);
+        ui->boxHeight->setValue(params.boxHeight);
+        ui->deltaVTop->setValue(params.deltaVTop);
+        ui->deltaVBottom->setValue(params.deltaVBottom);
+        ui->deltaVSide->setValue(params.deltaVSide);
+        ui->barrierX->setValue(params.barrierX);
+        ui->barrierWidth->setValue(params.barrierWidth);
+        ui->holeY->setValue(params.holeY);
+        ui->holeHeight->setValue(params.holeHeight);
+        ui->vLoss->setValue(params.vLoss);
+        ui->particleR->setValue(params.rParticle);
+        ui->g->setValue(params.g);
+        ui->nLeft->setValue(params.nLeftParticles);
+        ui->nRight->setValue(params.nRightParticles);
+        ui->vInit->setValue(params.vInit);
+        ui->fps->setValue(params.fps);
+
+
         ui->labelInputFile->setText("Opening file: " + fi.fileName());
         ui->labelClearInputFile->setVisible(true);
         ui->boxWidth->setEnabled(false);
@@ -109,6 +133,24 @@ void NewExperimentWindow::on_buttonRun_released() {
             double minToSimulate = (double)ui->simulationTime->value();
             double fps = (double)ui->fps->value();
 
+            UiParams params = {nLeftParticles,
+                               nRightParticles,
+                               rParticle,
+                               vInit,
+                               vLoss,
+                               boxWidth,
+                               boxHeight,
+                               barrierX,
+                               barrierWidth,
+                               holeY,
+                               holeHeight,
+                               deltaVTop,
+                               deltaVBottom,
+                               deltaVSide,
+                               g,
+                               minToSimulate,
+                               fps
+                              };
 
             QProgressDialog* progressDialog = new QProgressDialog(tr("Simulating into %1").arg(outputFile.fileName()),
                                                                   tr("Cancel"),
@@ -121,7 +163,7 @@ void NewExperimentWindow::on_buttonRun_released() {
                                          vInit, vLoss, boxWidth, boxHeight, barrierX,
                                          barrierWidth, holeY, holeHeight, deltaVTop,
                                          deltaVBottom, deltaVSide, g, minToSimulate,
-                                         fps, outputFile.fileName());
+                                         fps, outputFile.fileName(), params);
             QThread *worker = new QThread(this);
             generator->moveToThread(worker);
             connect(generator, &World::onSimulationProgress, progressDialog, &QProgressDialog::setValue);

@@ -16,7 +16,7 @@ const double PI = 3.1415926;
 World::World(int nLeftParticles, int nRightParticles, double rParticle, double vInit, double loss, double width,
                      double height, double barrierX, double barrierWidth, double holeY,
                      double holeHeight, double deltaVTop, double deltaVBottom, double deltaVSide, double g,
-                     int minToSimulate, double frames, QString fileName, QObject* parent) : QObject(parent){
+                     int minToSimulate, double frames, QString fileName, UiParams params, QObject* parent) : QObject(parent){
     this->g = g;
     this->loss = loss;
     geometry.rParticle = rParticle;
@@ -50,6 +50,8 @@ World::World(int nLeftParticles, int nRightParticles, double rParticle, double v
     this->fileName = fileName;
     this->minToSimulate = minToSimulate;
     this->frames = frames;
+    this->params = params;
+
     nParticles = nLeftParticles + nRightParticles;
     emit onWorldInitialized(geometry, getParticles());
 }
@@ -57,6 +59,9 @@ World::World(int nLeftParticles, int nRightParticles, double rParticle, double v
 World::World(QString fileName, QObject *parent) : QObject(parent) {
     this->fileName = fileName;
     ifstream in(fileName.toStdString(), ios::binary | ios::in);
+    //ui params
+    in.read((char *)&params, sizeof(UiParams));
+
     //box
     in.read((char*)&geometry.xRight, sizeof(geometry.xRight));
     in.read((char*)&geometry.yMax, sizeof(geometry.yMax));
@@ -303,6 +308,9 @@ bool World::initialDistribution() {
 void World::writeParameters() {
     ofstream out(fileName.toStdString(), ios::binary | ios::out);
     if (out.is_open()) {
+        //ui parameters
+        out.write((char *)&params, sizeof(UiParams));
+
         //box
         out.write((char*)&geometry.xRight, sizeof(geometry.xRight));
         out.write((char*)&geometry.yMax, sizeof(geometry.yMax));
@@ -337,7 +345,7 @@ void World::readParticlesState(int stateNum) {
     uint16_t id;
     ifstream in(fileName.toStdString(), ios::binary | ios::in | ios::app);
 
-    qint16 headSize = sizeof(geometry.xRight) + sizeof(geometry.yMax) + sizeof(deltaVTop) +
+    qint16 headSize = sizeof(UiParams) + sizeof(geometry.xRight) + sizeof(geometry.yMax) + sizeof(deltaVTop) +
             sizeof(deltaVBottom) + sizeof(deltaVSide) +  sizeof(geometry.xCenter) +
             sizeof(geometry.wThickness) + sizeof(geometry.holePosition) + sizeof(geometry.holeSize) +
             sizeof(loss) + sizeof(geometry.rParticle) + sizeof(g) +sizeof(nParticles);

@@ -156,8 +156,10 @@ void DemonstrationWindow::on_sliderState_valueChanged(int value){
     mWorld->readParticlesState(value);
     ui->labelTime->setText(tr("Time elapsed: %1s").arg(mWorld->getTime(), 0, 'g', 5));
     QVector<SParticle> particles = mWorld->getParticles();
-    updateBoltzmannPlot(particles, ui->boltzmannNumBins->value());
-    updateMaxwellPlot(particles, ui->maxwellNumBins->value());
+    if (particles.size() != 0) {
+        updateBoltzmannPlot(particles, ui->boltzmannNumBins->value());
+        updateMaxwellPlot(particles, ui->maxwellNumBins->value());
+    }
 }
 
 void DemonstrationWindow::on_buttonPlay_released() {

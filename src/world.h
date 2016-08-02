@@ -9,6 +9,26 @@
 
 const int nMaxParticles = 12000; //65536;		// Максимальное число частиц
 
+struct UiParams {
+    int nLeftParticles;
+    int nRightParticles;
+    double rParticle;
+    double vInit;
+    double vLoss;
+    double boxWidth;
+    double boxHeight;
+    double barrierX;
+    double barrierWidth;
+    double holeY;
+    double holeHeight;
+    double deltaVTop;
+    double deltaVBottom;
+    double deltaVSide;
+    double g;
+    double minToSimulate;
+    double fps;
+};
+
 struct SParticle {
     double x,y;		// position
     double vX, vY;	// velocity
@@ -39,7 +59,7 @@ public:
     World(int nLeftParticles, int nRightParticles, double rParticle, double vInit, double loss, double width,
               double height, double barrierX, double barrierWidth, double holeY,
               double holeHeight, double deltaVTop, double deltaVBottom, double deltaVSide, double g,
-              int minToSimulate, double frames, QString fileName, QObject* parent = 0);
+              int minToSimulate, double frames, QString fileName, UiParams params, QObject* parent = 0);
     World(QString fileName, QObject* parent = nullptr);
     ~World();
 
@@ -94,6 +114,7 @@ protected:
 protected:
     SParticle *particle;		// Сами частицы
     SGeometry geometry;
+    UiParams params;
     double vInit;			// Начальная скорость всех частиц (в метрах/сек)
     // Collisions
     double deltaVTop;		// Добавок скорости, который получает частица, ударяясь о верхнюю стенку
